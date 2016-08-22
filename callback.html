@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Loading...</title>
+  </head>
+  <body>
+    Loading...
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
+    <script>
+      if (window.location.href.match(/\?code=(.*)/)) {
+        var code = window.location.href.match(/\?code=(.*)/)[1];
+
+        $.getJSON('https://upriver.herokuapp.com/authenticate/' + code, function(data) {
+          sessionStorage.setItem('token', data.token);
+          window.location = 'https://upriver.github.io/';
+        });
+      } else {
+        window.location = 'https://github.com/login/oauth/authorize?client_id=d39dea3b2637ce0c4fdb&scope=repo';
+      }
+    </script>
+  </body>
+</html>
