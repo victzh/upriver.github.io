@@ -12,21 +12,21 @@
     <meta name="google-site-verification" content="xmEOL4UkxKVNujuichGOlM_e5ApTU0H9slLWAMoa_Z0">
     <link rel="canonical" href="https://upriver.github.io">
   </head>
-  <body>
+  <body class="mb-3">
     <nav class="navbar navbar-full navbar-dark bg-inverse">
       <div class="container-fluid">
           <a class="navbar-brand" href="/">Upriver</a>
       </div>
     </nav>
 
-    <header class="text-xs-center">
+    <header class="pt-3 text-xs-center">
       <div class="container">
         <h1 class="display-3">keep up with upstream</h1>
         <p>effortlessly sync your GitHub repositories with upstream using only the GitHub API</p>
       </div>
     </header>
 
-    <main>
+    <main class="pt-3">
       <div class="container text-xs-center" id="signin">
         <a class="btn btn-lg btn-social btn-github" href="https://github.com/login/oauth/authorize?client_id=d39dea3b2637ce0c4fdb&scope=repo" role="button">
           <span class="fa fa-github"></span> Sign in with GitHub
@@ -73,8 +73,10 @@
                   force?
                 </span>
               </label>
-              <div class="checkbox pull-xs-left m-l-1">
-                <input type="checkbox" id="force">
+              <div class="col-xs-8">
+                <div class="checkbox float-xs-left">
+                  <input type="checkbox" id="force">
+                </div>
               </div>
             </div>
             <div class="row">
