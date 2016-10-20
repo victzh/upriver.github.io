@@ -1,7 +1,9 @@
+'use strict';
+
 function Upriver(token) {
   $.ajaxSetup({
     headers: {
-      'Authorization': 'token ' + sessionStorage.getItem('token')
+      Authorization: 'token ' + token
     }
   });
 
@@ -23,7 +25,13 @@ function Upriver(token) {
     self.loadBranches(selected.text(), '#parentBranch');
   });
 
-  $('#pull').click(this.pull);
+  $('#pull').click(function() {
+    var repo = $('#forkRepo').children('option:selected').text();
+    var branch = $('#forkBranch').children('option:selected').text();
+    var hash = $('#parentBranch').children('option:selected').attr('data-sha');
+    var force = $('#force').prop('checked');
+    this.setCommit(repo, branch, hash, force);
+  }.bind(this));
 
   this.loadRepos(function() {
     $('#forkRepo').change();
@@ -31,30 +39,31 @@ function Upriver(token) {
   });
 }
 
-Upriver.prototype.getRepo = function(repo, callback) {
+Upriver.prototype.getRepo = function getRepo(repo, callback) {
   $.getJSON('https://api.github.com/repos/' + repo, callback);
 };
 
-Upriver.prototype.getRepos = function(callback) {
+Upriver.prototype.getRepos = function getRepos(callback) {
   $.getJSON('https://api.github.com/user', function(user) {
     $.getJSON(user.repos_url, callback);
   });
 };
 
-Upriver.prototype.addRepo = function(repo) {
-  $('<option></option>')
+Upriver.prototype.addRepo = function addRepo(repo) {
+  $(document.createElement('option'))
     .text(repo.full_name)
     .attr('data-name', repo.full_name)
-    .attr('data-parent', (repo.parent) ? repo.parent.full_name : '')
+    .attr('data-parent', repo.parent.full_name)
+    .attr('data-default-branch', repo.default_branch)
     .appendTo('#forkRepo');
 
-  $('<option></option>')
+  $(document.createElement('option'))
     .text(repo.parent.full_name)
     .attr('data-name', repo.parent.full_name)
     .appendTo('#parentRepo');
 };
 
-Upriver.prototype.loadRepos = function(callback) {
+Upriver.prototype.loadRepos = function loadRepos(callback) {
   this.getRepos(function(repos) {
     var queue = async.queue(function(repo, callback) {
       this.getRepo(repo.full_name, function(repo) {
@@ -73,45 +82,38 @@ Upriver.prototype.loadRepos = function(callback) {
   }.bind(this));
 };
 
-Upriver.prototype.getBranches = function(repo, callback) {
+Upriver.prototype.getBranches = function getBranches(repo, callback) {
   $.getJSON('https://api.github.com/repos/' + repo + '/branches', callback);
 };
 
-Upriver.prototype.addBranch = function(element, branch) {
-  $('<option></option>')
+Upriver.prototype.addBranch = function addBranch(element, branch) {
+  $(document.createElement('option'))
     .text(branch.name)
     .attr('data-name', branch.name)
     .attr('data-sha', branch.commit.sha)
+    .prop('selected', branch.name === 'master')
     .appendTo(element);
 };
 
-Upriver.prototype.loadBranches = function(repo, element) {
+Upriver.prototype.loadBranches = function loadBranches(repo, element) {
   this.getBranches(repo, function(branches) {
-    $(element).html('');
-    branches.forEach(this.addBranch.bind(this, element));
-    $(element).children('option[data-name=\'master\']').prop('selected', true).change();
+    $(element).empty();
+    branches.forEach(function(branch) {
+      this.addBranch(element, branch);
+    }.bind(this));
   }.bind(this));
 };
 
-Upriver.prototype.pull = function() {
-  var forkRepo = $('#forkRepo').children('option:selected').text();
-  var forkBranch = $('#forkBranch').children('option:selected').text();
-  var parentSha = $('#parentBranch').children('option:selected').attr('data-sha');
-  var force = $('#force').prop('checked');
-
+Upriver.prototype.setCommit = function setCommit(repo, branch, sha, force) {
   $.ajax({
     type: 'PATCH',
     dataType: "json",
-    url: 'https://api.github.com/repos/' + forkRepo + '/git/refs/heads/' + forkBranch,
-    data: JSON.stringify({
-      sha: parentSha,
-      force: force
-    }),
-    complete: function(xhr) {
-      var data = JSON.parse(xhr.responseText);
-      $('#modal pre').text(JSON.stringify(data, undefined, 2));
-      $('#modal').modal('show');
-    }
+    url: 'https://api.github.com/repos/' + repo + '/git/refs/heads/' + branch,
+    data: JSON.stringify({ sha: sha, force: force })
+  }).done(function(body) {
+    var data = JSON.parse(data);
+    $('#modal pre').text(JSON.stringify(data, undefined, 2));
+    $('#modal').modal('show');
   });
 };
 
