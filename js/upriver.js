@@ -111,7 +111,7 @@ Upriver.prototype.setCommit = function setCommit(repo, branch, sha, force) {
     url: 'https://api.github.com/repos/' + repo + '/git/refs/heads/' + branch,
     data: JSON.stringify({ sha: sha, force: force })
   }).done(function(body) {
-    var data = JSON.parse(data);
+    var data = JSON.parse(body);
     $('#modal pre').text(JSON.stringify(data, undefined, 2));
     $('#modal').modal('show');
   });
